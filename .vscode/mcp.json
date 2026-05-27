@@ -1,1 +1,8 @@
-
+{
+  "servers": {
+    "sap-di-agent": {
+      "command": ".venv\\Scripts\\python",
+      "args": ["server.py"]
+    }
+  }
+}
