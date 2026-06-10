@@ -1,11 +1,10 @@
-def check_di_health(context):
+def health_check(context: MCPContext):
     """
-    MCP Tool: verifies SAP DI session is alive
+    MCP Tool: validate SAP DI session
     """
     resp = context.sapdi.request("GET", "/user")
 
     return {
-        "status": resp.status_code,
         "authenticated": resp.status_code == 200,
-        "user": resp.json() if resp.status_code == 200 else None
+        "status": resp.status_code
     }
