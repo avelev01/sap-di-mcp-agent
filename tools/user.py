@@ -1,6 +1,6 @@
-def get_user(context):
+def get_user(context: MCPContext):
     """
-    MCP Tool: returns logged-in SAP DI user info
+    MCP Tool: returns SAP DI user info
     """
-    response = context.sapdi.request("GET", "/user")
-    return response.json()
+    resp = context.sapdi.request("GET", "/user")
+    return resp.json()
