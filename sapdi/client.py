@@ -29,9 +29,10 @@ class SAPDIClient:
         resp = self.session.post(
             f"{self.base_url}/api/login/v2/finalize",
             json={
+                "password": self.password
                 "tenant": self.tenant,
                 "username": self.username,
-                "password": self.password
+                
             },
             headers={
                 "Content-Type": "application/json",
