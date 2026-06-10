@@ -1,14 +1,14 @@
 from sapdi.client import SAPDIClient
+from config import Config
 
 
 class MCPContext:
-    def __init__(self, config):
+    def __init__(self):
         self.sapdi = SAPDIClient(
-            base_url=config["BASE_URL"],
-            tenant=config["TENANT"],
-            username=config["USERNAME"],
-            password=config["PASSWORD"]
+            base_url=Config.BASE_URL,
+            tenant=Config.TENANT,
+            username=Config.USERNAME,
+            password=Config.PASSWORD
         )
 
-        # optional: login at startup
         self.sapdi.login()
