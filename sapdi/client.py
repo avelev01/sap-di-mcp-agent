@@ -1,33 +1,87 @@
-import os
 import requests
-from dotenv import load_dotenv
-
-load_dotenv()
-
-SAP_DI_URL = os.getenv("SAP_DI_URL")
-TOKEN = os.getenv("SAP_DI_TOKEN")
-
-headers = {
-    "Authorization": f"Bearer {TOKEN}",
-    "Content-Type": "application/json"
-}
-
-def list_graphs():
-    url = f"{SAP_DI_URL}/app/pipeline-modeler/service/v1/repository/graphs"
-    r = requests.get(url, headers=headers)
-    r.raise_for_status()
-    return r.json()
 
 
-def run_graph(graph_id: str):
-    url = f"{SAP_DI_URL}/app/pipeline-modeler/service/v1/runtime/graphs/{graph_id}/run"
-    r = requests.post(url, headers=headers)
-    r.raise_for_status()
-    return r.json()
+class SAPDIClient:
+    def __init__(self, base_url: str, tenant: str, username: str, password: str):
+        self.base_url = base_url.rstrip("/")
+        self.tenant = tenant
+        self.username = username
+        self.password = password
 
+        self.session = requests.Session()
+        self.logged_in = False
 
-def get_logs(graph_id: str):
-    url = f"{SAP_DI_URL}/app/pipeline-modeler/service/v1/logs/{graph_id}"
-    r = requests.get(url, headers=headers)
-    r.raise_for_status()
-    return r.json()
+    # -------------------------
+    # STEP 1: bootstrap cookies
+    # -------------------------
+    def _bootstrap(self):
+        self.session.get(
+            f"{self.base_url}/login/?tenant={self.tenant}",
+            verify=False
+        )
+
+    # -------------------------
+    # LOGIN
+    # -------------------------
+    def login(self):
+        self._bootstrap()
+
+        resp = self.session.post(
+            f"{self.base_url}/api/login/v2/finalize",
+            json={
+                "tenant": self.tenant,
+                "username": self.username,
+                "password": self.password
+            },
+            headers={
+                "Content-Type": "application/json",
+                "X-Requested-With": "XMLHttpRequest",
+                "Origin": self.base_url,
+                "Referer": f"{self.base_url}/login/"
+            },
+            verify=False
+        )
+
+        if resp.status_code != 200:
+            raise Exception(f"Login failed: {resp.text}")
+
+        cookies = self.session.cookies.get_dict()
+
+        if "vsystem-session-id" not in cookies:
+            raise Exception("Login succeeded but session cookie missing")
+
+        self.logged_in = True
+        return True
+
+    # -------------------------
+    # SESSION GUARANTEE
+    # -------------------------
+    def ensure_login(self):
+        if not self.logged_in:
+            self.login()
+
+    # -------------------------
+    # GENERIC REQUEST WRAPPER
+    # -------------------------
+    def request(self, method: str, path: str, **kwargs):
+        self.ensure_login()
+
+        url = f"{self.base_url}{path}"
+        resp = self.session.request(method, url, verify=False, **kwargs)
+
+        # auto-recover session expiry
+        if resp.status_code == 401:
+            self.logged_in = False
+            self.login()
+            resp = self.session.request(method, url, verify=False, **kwargs)
+
+        return resp
+
+    # -------------------------
+    # HELPERS
+    # -------------------------
+    def get_user(self):
+        return self.request("GET", "/user").json()
+
+    def get_schedules(self):
+        return self.request("GET", "/schedules")
