@@ -1,4 +1,4 @@
 from sapdi.context import MCPContext
 
-# 👇 created ONCE when MCP server starts
+# created once when MCP server starts
 context = MCPContext()
