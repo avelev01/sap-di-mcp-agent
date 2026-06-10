@@ -4,10 +4,6 @@ from sapdi.tools.health import health_check
 
 
 def bind_tools(mcp, context):
-    """
-    MCP Tool Factory:
-    binds all tools with shared SAP DI context
-    """
 
     @mcp.tool()
     def tool_get_user():
