@@ -1,10 +1,10 @@
-def get_schedules(context):
+def get_schedules(context: MCPContext):
     """
-    MCP Tool: returns schedules from SAP DI
+    MCP Tool: fetch DI schedules
     """
-    response = context.sapdi.request("GET", "/schedules")
-    
-    if response.status_code == 404:
-        return {"error": "Endpoint not available in this tenant"}
+    resp = context.sapdi.request("GET", "/schedules")
 
-    return response.json()
+    if resp.status_code == 404:
+        return {"error": "Schedules API not available"}
+
+    return resp.json()
