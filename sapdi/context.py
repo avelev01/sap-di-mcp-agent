@@ -1,5 +1,5 @@
 from sapdi.client import SAPDIClient
-from config import Config
+from sapdi.config import Config
 
 
 class MCPContext:
