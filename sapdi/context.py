@@ -6,9 +6,10 @@ class MCPContext:
     def __init__(self):
         self.sapdi = SAPDIClient(
             base_url=Config.BASE_URL,
+            password=Config.PASSWORD,
             tenant=Config.TENANT,
-            username=Config.USERNAME,
-            password=Config.PASSWORD
+            username=Config.USERNAME
+            
         )
 
         self.sapdi.login()
